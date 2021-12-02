@@ -9,12 +9,24 @@ fasta=os.path.basename(URL)
 if not os.path.exists(fasta):
     os.system("curl -O {}".format(URL))
 
+# you could provide this as a cmdline input
+interval_size = 500
+
 #TODO
 # Figure out how you will keep track of the output filename
 # take a set of sequences and write out when you get to a certain number
 # determine a new filename for the output
-
+prefix="chunk_{}.fa"
 seqs_to_write = []
+chunk_number  = 1
 with gzip.open(fasta,"rt") as infh:
     for seq_record in SeqIO.parse( infh , "fasta"):
-        print(seq_record.id)
+        #print(seq_record.id)
+        seqs_to_write.append(seq_record)
+        if len(seqs_to_write) >= interval_size:
+            SeqIO.write(seqs_to_write, "chunk_{}.fa".format(chunk_number),"fasta")
+            seqs_to_write = []
+            chunk_number += 1
+
+if len(seqs_to_write) > 0:
+    SeqIO.write(seqs_to_write, "chunk_{}.fa".format(chunk_number),"fasta")
